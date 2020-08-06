@@ -46,7 +46,7 @@ public class SellerListController implements Initializable, DataChangeListener {
 
 	@FXML
 	private TableColumn<Seller, String> tableColumnName;
-	
+
 	@FXML
 	private TableColumn<Seller, String> tableColumnEmail;
 	
@@ -54,8 +54,8 @@ public class SellerListController implements Initializable, DataChangeListener {
 	private TableColumn<Seller, Date> tableColumnBirthDate;
 	
 	@FXML
-	private TableColumn<Seller, Double> tableColumnBaseSalary;	
-
+	private TableColumn<Seller, Double> tableColumnBaseSalary;
+	
 	@FXML
 	private TableColumn<Seller, Seller> tableColumnEDIT;
 
@@ -83,11 +83,6 @@ public class SellerListController implements Initializable, DataChangeListener {
 		initializeNodes();
 	}
 
-	@Override
-	public void onDataChanged() {
-		updateTableView();
-	}
-
 	private void initializeNodes() {
 		tableColumnId.setCellValueFactory(new PropertyValueFactory<>("id"));
 		tableColumnName.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -103,7 +98,7 @@ public class SellerListController implements Initializable, DataChangeListener {
 
 	public void updateTableView() {
 		if (service == null) {
-			throw new IllegalStateException("Service was full");
+			throw new IllegalStateException("Service was null");
 		}
 		List<Seller> list = service.findAll();
 		obsList = FXCollections.observableArrayList(list);
@@ -111,7 +106,6 @@ public class SellerListController implements Initializable, DataChangeListener {
 		initEditButtons();
 		initRemoveButtons();
 	}
-	
 
 	private void createDialogForm(Seller obj, String absoluteName, Stage parentStage) {
 		try {
@@ -122,7 +116,7 @@ public class SellerListController implements Initializable, DataChangeListener {
 			controller.setSeller(obj);
 			controller.setServices(new SellerService(), new DepartmentService());
 			controller.loadAssociatedObjects();
-			controller.subscribeDataChangeListeners(this);
+			controller.subscribeDataChangeListener(this);
 			controller.updateFormData();
 
 			Stage dialogStage = new Stage();
@@ -134,8 +128,13 @@ public class SellerListController implements Initializable, DataChangeListener {
 			dialogStage.showAndWait();
 		} catch (IOException e) {
 			e.printStackTrace();
-			Alerts.showAlert("IOexception", "Erro loading view", e.getMessage(), AlertType.ERROR);
+			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
 		}
+	}
+
+	@Override
+	public void onDataChanged() {
+		updateTableView();
 	}
 
 	private void initEditButtons() {
@@ -177,15 +176,15 @@ public class SellerListController implements Initializable, DataChangeListener {
 
 	private void removeEntity(Seller obj) {
 		Optional<ButtonType> result = Alerts.showConfirmation("Confirmation", "Are you sure to delete?");
-		
-		if(result.get() == ButtonType.OK) {
-			if(service == null) {
+
+		if (result.get() == ButtonType.OK) {
+			if (service == null) {
 				throw new IllegalStateException("Service was null");
 			}
 			try {
 				service.remove(obj);
 				updateTableView();
-			} 
+			}
 			catch (DbIntegrityException e) {
 				Alerts.showAlert("Error removing object", null, e.getMessage(), AlertType.ERROR);
 			}
